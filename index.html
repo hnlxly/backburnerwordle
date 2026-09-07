@@ -1,0 +1,3845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Five Letters</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    :root {
+      --paper: #EDE6D6;
+      --paper-2: #E4DAC1;
+      --card: #F4EEDF;
+
+      --ink: #24211C;
+      --ink-soft: #6B6250;
+
+      --line: #C9BEA0;
+
+      --correct: #566B3E;
+      --correct-text: #F4EEDF;
+
+      --present: #B07F2C;
+      --present-text: #F4EEDF;
+
+      --absent: #CFC6AE;
+      --absent-text: #6B6250;
+
+      --accent: #A1402A;
+      --accent-text: #F4EEDF;
+
+      --radius: 3px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    body {
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          rgba(36, 33, 28, 0.02) 0px,
+          rgba(36, 33, 28, 0.02) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+    }
+
+    .wrap {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+
+      border-bottom: 1px solid var(--line);
+
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+    }
+
+    .brand h1 {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+
+      font-size: 30px;
+      letter-spacing: 0.5px;
+
+      margin: 0;
+      line-height: 1;
+    }
+
+    .brand p {
+      margin: 6px 0 0;
+
+      font-size: 13px;
+      color: var(--ink-soft);
+
+      max-width: 30ch;
+      line-height: 1.5;
+    }
+
+    #adminBtn {
+      background: none;
+
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+
+      width: 38px;
+      height: 38px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      cursor: pointer;
+
+      color: var(--ink-soft);
+
+      flex-shrink: 0;
+
+      transition:
+        border-color 0.15s ease,
+        color 0.15s ease;
+    }
+
+    #adminBtn:hover {
+      border-color: var(--ink-soft);
+      color: var(--ink);
+    }
+
+    #adminBtn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .banner {
+      min-height: 20px;
+
+      font-size: 13px;
+      font-weight: 600;
+
+      color: var(--ink);
+
+      background: var(--card);
+
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+
+      padding: 0 12px;
+
+      max-height: 0;
+
+      overflow: hidden;
+
+      opacity: 0;
+
+      transition: all 0.2s ease;
+
+      text-align: center;
+    }
+
+    .banner.show {
+      max-height: 50px;
+
+      padding: 8px 12px;
+
+      opacity: 1;
+
+      margin-bottom: 14px;
+    }
+
+    .grid {
+      display: grid;
+
+      gap: 6px;
+
+      margin-bottom: 22px;
+
+      width: 100%;
+
+      max-width: 460px;
+    }
+
+    .row {
+      display: grid;
+
+      gap: 6px;
+    }
+
+    .row.shake {
+      animation: shake 0.35s ease;
+    }
+
+    @keyframes shake {
+
+      10%,
+      90% {
+        transform: translateX(-2px);
+      }
+
+      20%,
+      80% {
+        transform: translateX(3px);
+      }
+
+      30%,
+      50%,
+      70% {
+        transform: translateX(-5px);
+      }
+
+      40%,
+      60% {
+        transform: translateX(5px);
+      }
+    }
+
+    .tile {
+      aspect-ratio: 1;
+
+      border: 2px solid var(--line);
+
+      border-radius: var(--radius);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-family: 'Fraunces', serif;
+
+      font-weight: 600;
+
+      background: var(--card);
+
+      color: var(--ink);
+
+      text-transform: uppercase;
+
+      transition:
+        transform 0.15s ease,
+        border-color 0.1s ease;
+
+      user-select: none;
+    }
+
+    .tile.filled {
+      border-color: var(--ink-soft);
+
+      transform: scale(1.03);
+    }
+
+    .tile.flip {
+      animation: flip 0.5s ease forwards;
+    }
+
+    @keyframes flip {
+
+      0% {
+        transform: rotateX(0deg);
+      }
+
+      50% {
+        transform: rotateX(90deg);
+      }
+
+      51% {
+        transform: rotateX(90deg);
+      }
+
+      100% {
+        transform: rotateX(0deg);
+      }
+    }
+
+    .tile.correct {
+      background: var(--correct);
+
+      color: var(--correct-text);
+
+      border-color: var(--correct);
+    }
+
+    .tile.present {
+      background: var(--present);
+
+      color: var(--present-text);
+
+      border-color: var(--present);
+    }
+
+    .tile.absent {
+      background: var(--absent);
+
+      color: var(--absent-text);
+
+      border-color: var(--absent);
+    }
+
+    .keyboard {
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 6px;
+
+      width: 100%;
+
+      max-width: 460px;
+    }
+
+    .krow {
+      display: flex;
+
+      gap: 5px;
+
+      justify-content: center;
+    }
+
+    .key {
+      font-family: 'Inter', sans-serif;
+
+      font-weight: 600;
+
+      font-size: 12.5px;
+
+      border: 1px solid var(--line);
+
+      border-radius: var(--radius);
+
+      background: var(--card);
+
+      color: var(--ink);
+
+      height: 46px;
+
+      min-width: 30px;
+
+      flex: 1;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      cursor: pointer;
+
+      transition:
+        background 0.1s ease,
+        color 0.1s ease,
+        transform 0.05s ease;
+
+      text-transform: uppercase;
+    }
+
+    .key:active {
+      transform: scale(0.94);
+    }
+
+    .key.wide {
+      flex: 1.6;
+
+      font-size: 11px;
+    }
+
+    .key.correct {
+      background: var(--correct);
+
+      color: var(--correct-text);
+
+      border-color: var(--correct);
+    }
+
+    .key.present {
+      background: var(--present);
+
+      color: var(--present-text);
+
+      border-color: var(--present);
+    }
+
+    .key.absent {
+      background: var(--absent);
+
+      color: var(--absent-text);
+
+      border-color: var(--absent);
+
+      opacity: 0.7;
+    }
+
+    .idle-note {
+      text-align: center;
+
+      color: var(--ink-soft);
+
+      font-size: 13px;
+
+      line-height: 1.6;
+
+      padding: 40px 20px;
+
+      border: 1px dashed var(--line);
+
+      border-radius: var(--radius);
+
+      max-width: 320px;
+    }
+
+    .overlay {
+      position: fixed;
+
+      inset: 0;
+
+      background: rgba(36, 33, 28, 0.45);
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      padding: 20px;
+
+      z-index: 10;
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    .modal {
+      background: var(--paper-2);
+
+      border: 1px solid var(--line);
+
+      border-radius: var(--radius);
+
+      padding: 26px;
+
+      width: 100%;
+
+      max-width: 340px;
+
+      max-height: 90vh;
+
+      overflow-y: auto;
+    }
+
+    .modal h2 {
+      font-family: 'Fraunces', serif;
+
+      font-size: 20px;
+
+      margin: 0 0 4px;
+    }
+
+    .modal p.sub {
+      font-size: 12.5px;
+
+      line-height: 1.5;
+
+      color: var(--ink-soft);
+
+      margin: 0 0 18px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+
+      font-size: 11.5px;
+
+      font-weight: 600;
+
+      letter-spacing: 0.3px;
+
+      color: var(--ink-soft);
+
+      margin-bottom: 5px;
+    }
+
+    .field input {
+      width: 100%;
+
+      padding: 10px 11px;
+
+      border: 1px solid var(--line);
+
+      border-radius: var(--radius);
+
+      background: var(--card);
+
+      font-family: 'Inter', sans-serif;
+
+      font-size: 15px;
+
+      color: var(--ink);
+    }
+
+    .field input:focus-visible {
+      outline: 2px solid var(--accent);
+
+      outline-offset: 1px;
+    }
+
+    .field input.mono {
+      text-transform: uppercase;
+
+      letter-spacing: 3px;
+
+      font-family: 'Fraunces', serif;
+    }
+
+    .modal-actions {
+      display: flex;
+
+      gap: 8px;
+
+      margin-top: 18px;
+    }
+
+    .btn {
+      flex: 1;
+
+      padding: 10px;
+
+      border-radius: var(--radius);
+
+      border: 1px solid var(--line);
+
+      background: var(--card);
+
+      color: var(--ink);
+
+      font-weight: 600;
+
+      font-size: 13.5px;
+
+      cursor: pointer;
+
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+
+      color: var(--accent-text);
+
+      border-color: var(--accent);
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--accent);
+
+      outline-offset: 1px;
+    }
+
+    .status-line {
+      font-size: 12px;
+
+      line-height: 1.5;
+
+      color: var(--ink-soft);
+
+      margin-top: 16px;
+
+      padding-top: 14px;
+
+      border-top: 1px solid var(--line);
+
+      overflow-wrap: anywhere;
+    }
+
+    .status-line b {
+      color: var(--ink);
+    }
+
+    .error-text {
+      font-size: 12px;
+
+      line-height: 1.4;
+
+      color: var(--accent);
+
+      margin-top: -8px;
+
+      margin-bottom: 12px;
+
+      min-height: 14px;
+    }
+
+    .victory-modal {
+      max-width: 420px;
+    }
+
+    .video-wrap {
+      position: relative;
+
+      width: 100%;
+
+      aspect-ratio: 16 / 9;
+
+      background: #000;
+
+      border-radius: var(--radius);
+
+      overflow: hidden;
+
+      margin-bottom: 16px;
+    }
+
+    .video-wrap iframe,
+    .video-wrap video {
+      position: absolute;
+
+      inset: 0;
+
+      width: 100%;
+
+      height: 100%;
+
+      border: 0;
+    }
+
+    .confetti-field {
+      position: relative;
+
+      height: 170px;
+
+      overflow: hidden;
+
+      border: 1px dashed var(--line);
+
+      border-radius: var(--radius);
+
+      margin-bottom: 16px;
+
+      background: var(--card);
+    }
+
+    .confetti-piece {
+      position: absolute;
+
+      top: -18px;
+
+      width: 8px;
+
+      height: 14px;
+
+      opacity: 0.95;
+
+      animation: confetti-fall 1.6s ease-in forwards;
+    }
+
+    @keyframes confetti-fall {
+
+      to {
+        transform:
+          translateY(190px)
+          rotate(var(--rot));
+
+        opacity: 0;
+      }
+    }
+
+    .rewatch-link {
+      background: none;
+
+      border: none;
+
+      color: var(--accent);
+
+      font-family: 'Inter', sans-serif;
+
+      font-weight: 600;
+
+      font-size: 13px;
+
+      cursor: pointer;
+
+      padding: 0 0 16px;
+
+      text-decoration: underline;
+    }
+
+    @media (max-width: 380px) {
+
+      .wrap {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .brand h1 {
+        font-size: 25px;
+      }
+
+      .key {
+        height: 42px;
+
+        min-width: 25px;
+
+        font-size: 11px;
+      }
+
+      .key.wide {
+        font-size: 9px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .tile.flip,
+      .row.shake {
+        animation: none !important;
+      }
+
+      .confetti-piece {
+        animation: none;
+
+        opacity: 0;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="wrap">
+
+    <header>
+
+      <div class="brand">
+
+        <h1>Five Letters</h1>
+
+        <p>
+          Guess the word before you're out of tries.
+          The admin picks it — and how long it is.
+        </p>
+
+      </div>
+
+      <button
+        id="adminBtn"
+        title="Admin"
+        aria-label="Admin settings"
+      >
+
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        >
+
+          <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
+
+          <path d="M19.4 13a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V19a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H4a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H10a1.65 1.65 0 001-1.51V4a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V10a1.65 1.65 0 001.51 1H20a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+
+        </svg>
+
+      </button>
+
+    </header>
+
+    <div
+      id="banner"
+      class="banner"
+      aria-live="polite"
+    ></div>
+
+    <div id="gameArea"></div>
+
+  </div>
+
+
+  <div
+    id="adminOverlay"
+    class="overlay hidden"
+  >
+
+    <div
+      class="modal"
+      id="adminModal"
+    ></div>
+
+  </div>
+
+
+  <div
+    id="victoryOverlay"
+    class="overlay hidden"
+  >
+
+    <div
+      class="modal victory-modal"
+      id="victoryModal"
+    ></div>
+
+  </div>
+
+
+  <!--
+    FIREBASE VERSION
+
+    Firebase Authentication:
+    Used only for the admin.
+
+    Firestore:
+    game/settings
+      word
+      videoUrl
+      updatedAt
+
+    IMPORTANT:
+    Friends do not need to log in.
+  -->
+
+  <script type="module">
+
+    import { initializeApp } from
+      "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged
+    } from
+      "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      onSnapshot,
+      serverTimestamp
+    } from
+      "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+
+    /* =========================================
+       FIREBASE CONFIG
+    ========================================= */
+
+    const firebaseConfig = {
+
+      apiKey:
+        "AIzaSyAKbh5D5yC3NyOpMZRfmvtLsTlgP_FX2Ws",
+
+      authDomain:
+        "backburner-wordle.firebaseapp.com",
+
+      projectId:
+        "backburner-wordle",
+
+      storageBucket:
+        "backburner-wordle.firebasestorage.app",
+
+      messagingSenderId:
+        "404632072059",
+
+      appId:
+        "1:404632072059:web:dd96c771f7a71d96bd57de",
+
+      measurementId:
+        "G-HE6GZ00XL7"
+
+    };
+
+
+    /* =========================================
+       YOUR ADMIN UID
+    ========================================= */
+
+    const ADMIN_UID =
+      "rzpWIsqqoyWu9FPtPbAr68baAt83";
+
+
+    /* =========================================
+       INITIALIZE FIREBASE
+    ========================================= */
+
+    const firebaseApp =
+      initializeApp(firebaseConfig);
+
+    const auth =
+      getAuth(firebaseApp);
+
+    const db =
+      getFirestore(firebaseApp);
+
+
+    const settingsRef =
+      doc(
+        db,
+        "game",
+        "settings"
+      );
+
+
+    /* =========================================
+       SETTINGS
+    ========================================= */
+
+    const MIN_LEN = 4;
+
+    const MAX_LEN = 11;
+
+
+    const WORD_VIDEOS = {};
+
+
+    const KEY_ROWS = [
+
+      "QWERTYUIOP".split(""),
+
+      "ASDFGHJKL".split(""),
+
+      [
+        "ENTER",
+        ..."ZXCVBNM".split(""),
+        "BACK"
+      ]
+
+    ];
+
+
+    /* =========================================
+       GAME VARIABLES
+    ========================================= */
+
+    let currentWord = null;
+
+    let progress = null;
+
+    let currentGuess = "";
+
+    let loaded = false;
+
+    let celebrationVideo = null;
+
+    let currentSettingsSignature = null;
+
+    let bannerTimer = null;
+
+
+    /* =========================================
+       DOM
+    ========================================= */
+
+    const gameArea =
+      document.getElementById(
+        "gameArea"
+      );
+
+
+    const banner =
+      document.getElementById(
+        "banner"
+      );
+
+
+    const adminBtn =
+      document.getElementById(
+        "adminBtn"
+      );
+
+
+    const adminOverlay =
+      document.getElementById(
+        "adminOverlay"
+      );
+
+
+    const adminModal =
+      document.getElementById(
+        "adminModal"
+      );
+
+
+    const victoryOverlay =
+      document.getElementById(
+        "victoryOverlay"
+      );
+
+
+    const victoryModal =
+      document.getElementById(
+        "victoryModal"
+      );
+
+
+    /* =========================================
+       HELPERS
+    ========================================= */
+
+    function wordLen() {
+
+      return currentWord
+        ? currentWord.word.length
+        : 5;
+
+    }
+
+
+    function maxGuesses(len) {
+
+      return Math.min(
+        9,
+        len + 1
+      );
+
+    }
+
+
+    function tileFontSize(len) {
+
+      return Math.max(
+        14,
+        30 - (len - 4) * 2
+      );
+
+    }
+
+
+    function gridMaxWidth(len) {
+
+      return Math.min(
+        460,
+        len * 46 +
+        (len - 1) * 6
+      );
+
+    }
+
+
+    function escapeHtml(value) {
+
+      return String(value)
+
+        .replace(
+          /&/g,
+          "&amp;"
+        )
+
+        .replace(
+          /</g,
+          "&lt;"
+        )
+
+        .replace(
+          />/g,
+          "&gt;"
+        )
+
+        .replace(
+          /"/g,
+          "&quot;"
+        )
+
+        .replace(
+          /'/g,
+          "&#039;"
+        );
+
+    }
+
+
+    function escapeHtmlAttribute(value) {
+
+      return escapeHtml(value);
+
+    }
+
+
+    /* =========================================
+       VIDEO URL CONVERTER
+    ========================================= */
+
+    function toEmbeddable(rawUrl) {
+
+      try {
+
+        let url =
+          rawUrl.trim();
+
+
+        if (!url) {
+
+          return null;
+
+        }
+
+
+        if (
+          !/^https?:\/\//i.test(url)
+        ) {
+
+          url =
+            "https://" +
+            url;
+
+        }
+
+
+        const u =
+          new URL(url);
+
+
+        const host =
+          u.hostname
+            .toLowerCase()
+            .replace(
+              /^www\./,
+              ""
+            );
+
+
+        /* YOUTUBE */
+
+        if (
+          host === "youtu.be"
+        ) {
+
+          const id =
+            u.pathname
+              .split("/")
+              .filter(Boolean)[0];
+
+
+          if (!id) {
+
+            return null;
+
+          }
+
+
+          return {
+
+            kind: "iframe",
+
+            src:
+              `https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`
+
+          };
+
+        }
+
+
+        if (
+          host === "youtube.com" ||
+          host === "m.youtube.com"
+        ) {
+
+          let id = null;
+
+
+          if (
+            u.pathname ===
+            "/watch"
+          ) {
+
+            id =
+              u.searchParams.get(
+                "v"
+              );
+
+          }
+
+
+          else if (
+            u.pathname.startsWith(
+              "/shorts/"
+            )
+          ) {
+
+            id =
+              u.pathname
+                .split("/")[2];
+
+          }
+
+
+          else if (
+            u.pathname.startsWith(
+              "/embed/"
+            )
+          ) {
+
+            id =
+              u.pathname
+                .split("/")[2];
+
+          }
+
+
+          if (id) {
+
+            return {
+
+              kind: "iframe",
+
+              src:
+                `https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`
+
+            };
+
+          }
+
+        }
+
+
+        /* VIMEO */
+
+        if (
+          host === "vimeo.com"
+        ) {
+
+          const id =
+            u.pathname
+              .split("/")
+              .filter(Boolean)[0];
+
+
+          if (
+            id &&
+            /^\d+$/.test(id)
+          ) {
+
+            return {
+
+              kind: "iframe",
+
+              src:
+                `https://player.vimeo.com/video/${id}?autoplay=1`
+
+            };
+
+          }
+
+        }
+
+
+        /* TIKTOK */
+
+        if (
+          host === "tiktok.com" ||
+          host === "m.tiktok.com"
+        ) {
+
+          const match =
+            u.pathname.match(
+              /\/video\/(\d+)/
+            );
+
+
+          if (match) {
+
+            return {
+
+              kind: "iframe",
+
+              src:
+                `https://www.tiktok.com/player/v1/${match[1]}?autoplay=1`
+
+            };
+
+          }
+
+
+          return {
+
+            kind: "error",
+
+            message:
+              "Please paste the full TikTok video URL."
+
+          };
+
+        }
+
+
+        /* DIRECT VIDEO */
+
+        if (
+          /\.(mp4|webm|ogg)$/i.test(
+            u.pathname
+          )
+        ) {
+
+          return {
+
+            kind: "file",
+
+            src: u.href
+
+          };
+
+        }
+
+
+        /* OTHER EMBEDDABLE URL */
+
+        return {
+
+          kind: "iframe",
+
+          src: u.href
+
+        };
+
+
+      }
+
+      catch (error) {
+
+        console.error(
+          "Video URL error:",
+          error
+        );
+
+        return null;
+
+      }
+
+    }
+
+
+    /* =========================================
+       BANNER
+    ========================================= */
+
+    function showBanner(
+      msg,
+      ms
+    ) {
+
+      clearTimeout(
+        bannerTimer
+      );
+
+
+      banner.textContent =
+        msg;
+
+
+      banner.classList.add(
+        "show"
+      );
+
+
+      if (ms) {
+
+        bannerTimer =
+          setTimeout(
+            () => {
+
+              banner.classList.remove(
+                "show"
+              );
+
+            },
+            ms
+          );
+
+      }
+
+    }
+
+
+    function hideBanner() {
+
+      clearTimeout(
+        bannerTimer
+      );
+
+      banner.classList.remove(
+        "show"
+      );
+
+    }
+
+
+    /* =========================================
+       PERSONAL STORAGE
+    ========================================= */
+
+    async function getPersonal(
+      key
+    ) {
+
+      try {
+
+        const value =
+          localStorage.getItem(
+            `five_letters_personal_${key}`
+          );
+
+
+        return value
+          ? JSON.parse(value)
+          : null;
+
+      }
+
+      catch {
+
+        return null;
+
+      }
+
+    }
+
+
+    async function setPersonal(
+      key,
+      value
+    ) {
+
+      try {
+
+        localStorage.setItem(
+          `five_letters_personal_${key}`,
+          JSON.stringify(value)
+        );
+
+
+        return true;
+
+      }
+
+      catch {
+
+        return false;
+
+      }
+
+    }
+
+
+    /* =========================================
+       LOAD PLAYER PROGRESS
+    ========================================= */
+
+    async function loadPersonalProgress() {
+
+      const savedProgress =
+        await getPersonal(
+          "progress"
+        );
+
+
+      if (
+        currentWord &&
+        savedProgress &&
+        savedProgress.word ===
+          currentWord.word
+      ) {
+
+        progress =
+          savedProgress;
+
+      }
+
+
+      else if (currentWord) {
+
+        progress = {
+
+          word:
+            currentWord.word,
+
+          guesses: [],
+
+          statuses: [],
+
+          gameOver: false,
+
+          won: false
+
+        };
+
+
+        await setPersonal(
+          "progress",
+          progress
+        );
+
+      }
+
+
+      else {
+
+        progress = null;
+
+      }
+
+
+      currentGuess = "";
+
+    }
+
+
+    /* =========================================
+       APPLY FIRESTORE SETTINGS
+    ========================================= */
+
+    async function applySettings(
+      data,
+      announce = false
+    ) {
+
+      const nextWord =
+        typeof data?.word === "string"
+
+          ? data.word
+              .toUpperCase()
+              .trim()
+
+          : "";
+
+
+      const nextVideoUrl =
+        typeof data?.videoUrl === "string"
+
+          ? data.videoUrl.trim()
+
+          : "";
+
+
+      const signature =
+        `${nextWord}|${nextVideoUrl}`;
+
+
+      if (
+        signature ===
+        currentSettingsSignature &&
+        loaded
+      ) {
+
+        return;
+
+      }
+
+
+      const wordChanged =
+        currentWord?.word !==
+        nextWord;
+
+
+      currentSettingsSignature =
+        signature;
+
+
+      currentWord =
+        nextWord
+
+          ? {
+              word: nextWord,
+              setAt:
+                data?.updatedAt ||
+                null
+            }
+
+          : null;
+
+
+      celebrationVideo =
+        nextVideoUrl
+
+          ? {
+              url: nextVideoUrl
+            }
+
+          : null;
+
+
+      if (wordChanged) {
+
+        closeVictory();
+
+
+        await loadPersonalProgress();
+
+
+        if (
+          announce &&
+          nextWord
+        ) {
+
+          showBanner(
+            `New ${nextWord.length}-letter word set!`,
+            1800
+          );
+
+        }
+
+      }
+
+
+      loaded = true;
+
+      render();
+
+    }
+
+
+    /* =========================================
+       FIRESTORE INITIALIZATION
+    ========================================= */
+
+    async function init() {
+
+      gameArea.innerHTML =
+        `<p class="idle-note">Connecting…</p>`;
+
+
+      try {
+
+        const snapshot =
+          await getDoc(
+            settingsRef
+          );
+
+
+        await applySettings(
+          snapshot.exists()
+            ? snapshot.data()
+            : {},
+          false
+        );
+
+      }
+
+      catch (error) {
+
+        console.error(
+          error
+        );
+
+
+        gameArea.innerHTML = `
+
+          <div class="idle-note">
+
+            Unable to connect
+            to the game server.
+
+            <br><br>
+
+            Check your Firebase
+            configuration and
+            Firestore rules.
+
+          </div>
+
+        `;
+
+      }
+
+
+      onSnapshot(
+
+        settingsRef,
+
+        async snapshot => {
+
+          await applySettings(
+
+            snapshot.exists()
+              ? snapshot.data()
+              : {},
+
+            true
+
+          );
+
+        },
+
+        error => {
+
+          console.error(
+            "Firestore listener error:",
+            error
+          );
+
+
+          showBanner(
+            "Could not sync the latest game settings.",
+            3000
+          );
+
+        }
+
+      );
+
+    }
+
+
+    /* =========================================
+       WORD EVALUATION
+    ========================================= */
+
+    function evaluate(
+      guess,
+      answer
+    ) {
+
+      const len =
+        answer.length;
+
+
+      const result =
+        Array(len)
+          .fill("absent");
+
+
+      const counts = {};
+
+
+      for (
+        const ch of answer
+      ) {
+
+        counts[ch] =
+          (counts[ch] || 0) + 1;
+
+      }
+
+
+      /* CORRECT */
+
+      for (
+        let i = 0;
+        i < len;
+        i++
+      ) {
+
+        if (
+          guess[i] ===
+          answer[i]
+        ) {
+
+          result[i] =
+            "correct";
+
+
+          counts[
+            guess[i]
+          ]--;
+
+        }
+
+      }
+
+
+      /* PRESENT */
+
+      for (
+        let i = 0;
+        i < len;
+        i++
+      ) {
+
+        if (
+          result[i] ===
+          "correct"
+        ) {
+
+          continue;
+
+        }
+
+
+        const ch =
+          guess[i];
+
+
+        if (
+          counts[ch] > 0
+        ) {
+
+          result[i] =
+            "present";
+
+
+          counts[ch]--;
+
+        }
+
+      }
+
+
+      return result;
+
+    }
+
+
+    /* =========================================
+       KEYBOARD STATE
+    ========================================= */
+
+    function keyStateMap() {
+
+      const map = {};
+
+
+      const rank = {
+
+        correct: 3,
+
+        present: 2,
+
+        absent: 1
+
+      };
+
+
+      if (!progress) {
+
+        return map;
+
+      }
+
+
+      progress.guesses.forEach(
+
+        (guess, index) => {
+
+          const statuses =
+            progress.statuses[index] ||
+            [];
+
+
+          for (
+            let i = 0;
+            i < guess.length;
+            i++
+          ) {
+
+            const ch =
+              guess[i];
+
+
+            const state =
+              statuses[i];
+
+
+            if (
+              !map[ch] ||
+              rank[state] >
+                rank[map[ch]]
+            ) {
+
+              map[ch] =
+                state;
+
+            }
+
+          }
+
+        }
+
+      );
+
+
+      return map;
+
+    }
+
+
+    /* =========================================
+       RENDER
+    ========================================= */
+
+    function render() {
+
+      if (!loaded) {
+
+        return;
+
+      }
+
+
+      if (
+        !currentWord ||
+        !progress
+      ) {
+
+        gameArea.innerHTML = `
+
+          <div class="idle-note">
+
+            No word has been set yet.
+
+            <br>
+
+            Tap the gear icon to
+            set today's word as admin.
+
+          </div>
+
+        `;
+
+        return;
+
+      }
+
+
+      const len =
+        wordLen();
+
+
+      const maxG =
+        maxGuesses(len);
+
+
+      const fontSize =
+        tileFontSize(len);
+
+
+      const gridWidth =
+        gridMaxWidth(len);
+
+
+      const keyboardStates =
+        keyStateMap();
+
+
+      const rows = [];
+
+
+      for (
+        let r = 0;
+        r < maxG;
+        r++
+      ) {
+
+        let letters = [];
+
+        let statuses = [];
+
+
+        if (
+          r <
+          progress.guesses.length
+        ) {
+
+          letters =
+            progress.guesses[r]
+              .split("");
+
+
+          statuses =
+            progress.statuses[r] ||
+            [];
+
+        }
+
+
+        else if (
+          r ===
+            progress.guesses.length &&
+          !progress.gameOver
+        ) {
+
+          letters =
+            currentGuess.split("");
+
+        }
+
+
+        let tilesHtml = "";
+
+
+        for (
+          let c = 0;
+          c < len;
+          c++
+        ) {
+
+          const ch =
+            letters[c] ||
+            "";
+
+
+          const state =
+            statuses[c];
+
+
+          const classes =
+            ["tile"];
+
+
+          if (
+            ch &&
+            !state
+          ) {
+
+            classes.push(
+              "filled"
+            );
+
+          }
+
+
+          if (state) {
+
+            classes.push(
+              state,
+              "flip"
+            );
+
+          }
+
+
+          const styleParts = [
+
+            `font-size:${fontSize}px`
+
+          ];
+
+
+          if (state) {
+
+            styleParts.push(
+              `animation-delay:${c * 0.12}s`
+            );
+
+          }
+
+
+          tilesHtml += `
+
+            <div
+              class="${classes.join(" ")}"
+              style="${styleParts.join(";")}"
+            >
+              ${escapeHtml(ch)}
+            </div>
+
+          `;
+
+        }
+
+
+        rows.push(`
+
+          <div
+            class="row"
+            data-row="${r}"
+            style="grid-template-columns:repeat(${len},1fr)"
+          >
+
+            ${tilesHtml}
+
+          </div>
+
+        `);
+
+      }
+
+
+      let keyboardHtml =
+        `<div class="keyboard">`;
+
+
+      KEY_ROWS.forEach(
+        row => {
+
+          keyboardHtml +=
+            `<div class="krow">`;
+
+
+          row.forEach(
+            key => {
+
+              if (
+                key === "ENTER" ||
+                key === "BACK"
+              ) {
+
+                keyboardHtml += `
+
+                  <button
+                    class="key wide"
+                    data-key="${key}"
+                  >
+                    ${
+                      key === "ENTER"
+                        ? "Enter"
+                        : "⌫"
+                    }
+                  </button>
+
+                `;
+
+              }
+
+
+              else {
+
+                const state =
+                  keyboardStates[key] ||
+                  "";
+
+
+                keyboardHtml += `
+
+                  <button
+                    class="key ${state}"
+                    data-key="${key}"
+                  >
+                    ${key}
+                  </button>
+
+                `;
+
+              }
+
+            }
+          );
+
+
+          keyboardHtml +=
+            `</div>`;
+
+        }
+      );
+
+
+      keyboardHtml +=
+        `</div>`;
+
+
+      gameArea.innerHTML = `
+
+        <div
+          class="grid"
+          style="max-width:${gridWidth}px"
+        >
+
+          ${rows.join("")}
+
+        </div>
+
+
+        ${keyboardHtml}
+
+
+        ${
+          progress.won
+            ? `
+
+              <button
+                class="rewatch-link"
+                id="rewatchBtn"
+              >
+
+                Watch victory video again
+
+              </button>
+
+            `
+            : ""
+        }
+
+      `;
+
+
+      gameArea
+        .querySelectorAll(
+          "[data-key]"
+        )
+        .forEach(
+          button => {
+
+            button.addEventListener(
+              "click",
+              () => {
+
+                handleKey(
+                  button.getAttribute(
+                    "data-key"
+                  )
+                );
+
+              }
+            );
+
+          }
+        );
+
+
+      const rewatchBtn =
+        document.getElementById(
+          "rewatchBtn"
+        );
+
+
+      if (rewatchBtn) {
+
+        rewatchBtn.addEventListener(
+          "click",
+          openVictory
+        );
+
+      }
+
+
+      if (
+        progress.gameOver
+      ) {
+
+        if (
+          progress.won
+        ) {
+
+          showBanner(
+            "Solved it. Nicely done."
+          );
+
+        }
+
+
+        else {
+
+          showBanner(
+            `Out of guesses — the word was ${currentWord.word}.`
+          );
+
+        }
+
+      }
+
+
+      else {
+
+        hideBanner();
+
+      }
+
+    }
+
+
+    /* =========================================
+       INPUT
+    ========================================= */
+
+    async function handleKey(
+      key
+    ) {
+
+      if (
+        !currentWord ||
+        !progress ||
+        progress.gameOver
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        !adminOverlay.classList.contains(
+          "hidden"
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        key === "BACK"
+      ) {
+
+        currentGuess =
+          currentGuess.slice(
+            0,
+            -1
+          );
+
+
+        render();
+
+        return;
+
+      }
+
+
+      const len =
+        wordLen();
+
+
+      if (
+        key === "ENTER"
+      ) {
+
+        if (
+          currentGuess.length <
+          len
+        ) {
+
+          shakeCurrentRow();
+
+
+          showBanner(
+            "Not enough letters",
+            1200
+          );
+
+
+          return;
+
+        }
+
+
+        const guess =
+          currentGuess;
+
+
+        const statuses =
+          evaluate(
+            guess,
+            currentWord.word
+          );
+
+
+        progress.guesses.push(
+          guess
+        );
+
+
+        progress.statuses.push(
+          statuses
+        );
+
+
+        const won =
+          guess ===
+          currentWord.word;
+
+
+        const outOfGuesses =
+          progress.guesses.length >=
+          maxGuesses(len);
+
+
+        if (won) {
+
+          progress.won =
+            true;
+
+          progress.gameOver =
+            true;
+
+        }
+
+
+        else if (
+          outOfGuesses
+        ) {
+
+          progress.gameOver =
+            true;
+
+        }
+
+
+        currentGuess = "";
+
+
+        await setPersonal(
+          "progress",
+          progress
+        );
+
+
+        render();
+
+
+        if (won) {
+
+          openVictory();
+
+        }
+
+
+        return;
+
+      }
+
+
+      if (
+        /^[A-Z]$/.test(key) &&
+        currentGuess.length < len
+      ) {
+
+        currentGuess +=
+          key;
+
+
+        render();
+
+      }
+
+    }
+
+
+    /* =========================================
+       SHAKE
+    ========================================= */
+
+    function shakeCurrentRow() {
+
+      const row =
+        gameArea.querySelector(
+          `[data-row="${progress.guesses.length}"]`
+        );
+
+
+      if (!row) {
+
+        return;
+
+      }
+
+
+      row.classList.remove(
+        "shake"
+      );
+
+
+      void row.offsetWidth;
+
+
+      row.classList.add(
+        "shake"
+      );
+
+    }
+
+
+    /* =========================================
+       CONFETTI
+    ========================================= */
+
+    function confettiField() {
+
+      const colors = [
+
+        "var(--correct)",
+
+        "var(--present)",
+
+        "var(--accent)",
+
+        "var(--ink-soft)"
+
+      ];
+
+
+      let pieces = "";
+
+
+      for (
+        let i = 0;
+        i < 34;
+        i++
+      ) {
+
+        const left =
+          Math.random() * 100;
+
+
+        const delay =
+          (
+            Math.random() *
+            0.5
+          ).toFixed(2);
+
+
+        const rotation =
+          Math.round(
+            Math.random() *
+            360 -
+            180
+          );
+
+
+        const color =
+          colors[
+            i %
+            colors.length
+          ];
+
+
+        pieces += `
+
+          <div
+            class="confetti-piece"
+            style="
+              left:${left}%;
+              background:${color};
+              animation-delay:${delay}s;
+              --rot:${rotation}deg;
+            "
+          ></div>
+
+        `;
+
+      }
+
+
+      return `
+
+        <div class="confetti-field">
+
+          ${pieces}
+
+        </div>
+
+      `;
+
+    }
+
+
+    /* =========================================
+       VICTORY
+    ========================================= */
+
+    function openVictory() {
+
+      if (
+        !progress ||
+        !progress.won ||
+        !currentWord
+      ) {
+
+        return;
+
+      }
+
+
+      const guessCount =
+        progress.guesses.length;
+
+
+      const builtInVideo =
+        WORD_VIDEOS[
+          currentWord.word
+        ];
+
+
+      let embed = null;
+
+
+      if (builtInVideo) {
+
+        embed = {
+
+          kind: "file",
+
+          src: builtInVideo
+
+        };
+
+      }
+
+
+      else if (
+        celebrationVideo &&
+        celebrationVideo.url
+      ) {
+
+        embed =
+          toEmbeddable(
+            celebrationVideo.url
+          );
+
+      }
+
+
+      let mediaHtml = "";
+
+
+      if (
+        embed &&
+        embed.kind ===
+          "iframe"
+      ) {
+
+        mediaHtml = `
+
+          <div class="video-wrap">
+
+            <iframe
+              src="${escapeHtmlAttribute(embed.src)}"
+              allow="
+                autoplay;
+                encrypted-media;
+                picture-in-picture
+              "
+              allowfullscreen
+              title="Victory video"
+            ></iframe>
+
+          </div>
+
+        `;
+
+      }
+
+
+      else if (
+        embed &&
+        embed.kind === "file"
+      ) {
+
+        mediaHtml = `
+
+          <div class="video-wrap">
+
+            <video
+              id="victoryVideoEl"
+              src="${escapeHtmlAttribute(embed.src)}"
+              controls
+              playsinline
+              preload="auto"
+            ></video>
+
+          </div>
+
+          <div
+            class="error-text"
+            id="videoPlayErr"
+          ></div>
+
+        `;
+
+      }
+
+
+      else {
+
+        mediaHtml =
+          confettiField();
+
+      }
+
+
+      victoryModal.innerHTML = `
+
+        <h2>
+          Solved it 🎉
+        </h2>
+
+
+        <p class="sub">
+
+          Got it in
+          ${guessCount}
+          ${
+            guessCount === 1
+              ? "guess"
+              : "guesses"
+          }.
+
+        </p>
+
+
+        ${mediaHtml}
+
+
+        <div class="modal-actions">
+
+          <button
+            class="btn primary"
+            id="victoryCloseBtn"
+          >
+
+            Close
+
+          </button>
+
+        </div>
+
+      `;
+
+
+      document
+        .getElementById(
+          "victoryCloseBtn"
+        )
+        .addEventListener(
+          "click",
+          closeVictory
+        );
+
+
+      victoryOverlay.classList.remove(
+        "hidden"
+      );
+
+
+      if (
+        embed &&
+        embed.kind ===
+          "file"
+      ) {
+
+        const video =
+          document.getElementById(
+            "victoryVideoEl"
+          );
+
+
+        const errorText =
+          document.getElementById(
+            "videoPlayErr"
+          );
+
+
+        video.addEventListener(
+          "error",
+          () => {
+
+            errorText.textContent =
+              "The video could not be loaded. Check that the video URL is public and supported by your browser.";
+
+          }
+        );
+
+
+        video
+          .play()
+          .catch(
+            () => {
+
+              video.muted =
+                true;
+
+
+              video
+                .play()
+                .catch(
+                  () => {
+
+                    errorText.textContent =
+                      "Tap the play button to start the video.";
+
+                  }
+                );
+
+            }
+          );
+
+      }
+
+    }
+
+
+    function closeVictory() {
+
+      victoryOverlay.classList.add(
+        "hidden"
+      );
+
+
+      victoryModal.innerHTML =
+        "";
+
+    }
+
+
+    victoryOverlay.addEventListener(
+      "click",
+      event => {
+
+        if (
+          event.target ===
+          victoryOverlay
+        ) {
+
+          closeVictory();
+
+        }
+
+      }
+    );
+
+
+    /* =========================================
+       PHYSICAL KEYBOARD
+    ========================================= */
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          !adminOverlay.classList.contains(
+            "hidden"
+          )
+        ) {
+
+          return;
+
+        }
+
+
+        const key =
+          event.key.toUpperCase();
+
+
+        if (
+          key === "ENTER"
+        ) {
+
+          handleKey(
+            "ENTER"
+          );
+
+        }
+
+
+        else if (
+          key === "BACKSPACE"
+        ) {
+
+          handleKey(
+            "BACK"
+          );
+
+        }
+
+
+        else if (
+          /^[A-Z]$/.test(key)
+        ) {
+
+          handleKey(
+            key
+          );
+
+        }
+
+      }
+    );
+
+
+    /* =========================================
+       ADMIN
+    ========================================= */
+
+    adminBtn.addEventListener(
+      "click",
+      openAdmin
+    );
+
+
+    function isAdmin() {
+
+      return (
+        auth.currentUser &&
+        auth.currentUser.uid ===
+          ADMIN_UID
+      );
+
+    }
+
+
+    function openAdmin() {
+
+      if (
+        isAdmin()
+      ) {
+
+        renderAdminPanel();
+
+      }
+
+
+      else {
+
+        renderAdminLogin();
+
+      }
+
+
+      adminOverlay.classList.remove(
+        "hidden"
+      );
+
+    }
+
+
+    function closeAdmin() {
+
+      adminOverlay.classList.add(
+        "hidden"
+      );
+
+    }
+
+
+    adminOverlay.addEventListener(
+      "click",
+      event => {
+
+        if (
+          event.target ===
+          adminOverlay
+        ) {
+
+          closeAdmin();
+
+        }
+
+      }
+    );
+
+
+    /* =========================================
+       ADMIN LOGIN
+    ========================================= */
+
+    function renderAdminLogin(
+      message = ""
+    ) {
+
+      adminModal.innerHTML = `
+
+        <h2>
+          Admin
+        </h2>
+
+
+        <p class="sub">
+
+          Sign in with your
+          Firebase administrator
+          account to manage the
+          word and victory video.
+
+        </p>
+
+
+        <div class="field">
+
+          <label
+            for="adminEmail"
+          >
+            Email
+          </label>
+
+
+          <input
+            id="adminEmail"
+            type="email"
+            autocomplete="email"
+            placeholder="admin@example.com"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label
+            for="adminPassword"
+          >
+            Password
+          </label>
+
+
+          <input
+            id="adminPassword"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Password"
+          >
+
+        </div>
+
+
+        <div
+          class="error-text"
+          id="adminErr"
+        >
+          ${escapeHtml(message)}
+        </div>
+
+
+        <div class="modal-actions">
+
+          <button
+            class="btn"
+            id="cancelBtn"
+          >
+            Cancel
+          </button>
+
+
+          <button
+            class="btn primary"
+            id="loginBtn"
+          >
+            Sign in
+          </button>
+
+        </div>
+
+      `;
+
+
+      document
+        .getElementById(
+          "cancelBtn"
+        )
+        .addEventListener(
+          "click",
+          closeAdmin
+        );
+
+
+      const login =
+        async () => {
+
+          const email =
+            document.getElementById(
+              "adminEmail"
+            ).value.trim();
+
+
+          const password =
+            document.getElementById(
+              "adminPassword"
+            ).value;
+
+
+          const error =
+            document.getElementById(
+              "adminErr"
+            );
+
+
+          if (
+            !email ||
+            !password
+          ) {
+
+            error.textContent =
+              "Enter your Firebase Authentication email and password.";
+
+            return;
+
+          }
+
+
+          error.textContent =
+            "Signing in…";
+
+
+          try {
+
+            const credential =
+              await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+              );
+
+
+            if (
+              credential.user.uid !==
+              ADMIN_UID
+            ) {
+
+              await signOut(
+                auth
+              );
+
+
+              error.textContent =
+                "This account is not authorized as the admin.";
+
+              return;
+
+            }
+
+
+            renderAdminPanel();
+
+          }
+
+
+          catch (errorObj) {
+
+            console.error(
+              errorObj
+            );
+
+
+            error.textContent =
+              firebaseAuthError(
+                errorObj
+              );
+
+          }
+
+        };
+
+
+      document
+        .getElementById(
+          "loginBtn"
+        )
+        .addEventListener(
+          "click",
+          login
+        );
+
+
+      document
+        .getElementById(
+          "adminPassword"
+        )
+        .addEventListener(
+          "keydown",
+          event => {
+
+            if (
+              event.key ===
+              "Enter"
+            ) {
+
+              login();
+
+            }
+
+          }
+        );
+
+    }
+
+
+    function firebaseAuthError(
+      error
+    ) {
+
+      switch (
+        error?.code
+      ) {
+
+        case "auth/invalid-credential":
+
+        case "auth/wrong-password":
+
+        case "auth/user-not-found":
+
+          return "Incorrect email or password.";
+
+
+        case "auth/too-many-requests":
+
+          return "Too many attempts. Please wait and try again.";
+
+
+        case "auth/invalid-email":
+
+          return "Please enter a valid email address.";
+
+
+        default:
+
+          return "Could not sign in. Check Firebase Authentication and try again.";
+
+      }
+
+    }
+
+
+    /* =========================================
+       ADMIN PANEL
+    ========================================= */
+
+    function renderAdminPanel() {
+
+      if (
+        !isAdmin()
+      ) {
+
+        renderAdminLogin(
+          "Please sign in as the authorized admin."
+        );
+
+        return;
+
+      }
+
+
+      const statusText =
+        currentWord
+
+          ? `Current word: <b>${escapeHtml(currentWord.word)}</b>`
+
+          : `No word set yet.`;
+
+
+      const videoStatus =
+        celebrationVideo?.url
+
+          ? `Video set: <b>${escapeHtml(celebrationVideo.url)}</b>`
+
+          : `No video set — winners see paper confetti instead.`;
+
+
+      adminModal.innerHTML = `
+
+        <h2>
+          Set the word
+        </h2>
+
+
+        <p class="sub">
+
+          Choose any word from
+          ${MIN_LEN} to
+          ${MAX_LEN} letters.
+
+          Longer words get an
+          extra guess.
+
+          Changing the word resets
+          the game.
+
+        </p>
+
+
+        <div class="field">
+
+          <label
+            for="wordInput"
+          >
+            New word
+          </label>
+
+
+          <input
+            id="wordInput"
+            class="mono"
+            minlength="${MIN_LEN}"
+            maxlength="${MAX_LEN}"
+            autocomplete="off"
+            placeholder="AMBER"
+          >
+
+        </div>
+
+
+        <div
+          class="error-text"
+          id="adminErr"
+        ></div>
+
+
+        <div class="modal-actions">
+
+          <button
+            class="btn"
+            id="closeBtn"
+          >
+            Close
+          </button>
+
+
+          <button
+            class="btn primary"
+            id="saveWordBtn"
+          >
+            Save word
+          </button>
+
+        </div>
+
+
+        <div class="status-line">
+
+          ${statusText}
+
+        </div>
+
+
+        <div
+          class="field"
+          style="margin-top:16px"
+        >
+
+          <label
+            for="videoInput"
+          >
+            Victory video URL
+            (optional)
+          </label>
+
+
+          <input
+            id="videoInput"
+            autocomplete="off"
+            placeholder="https://youtube.com/watch?v=..."
+            value="${escapeHtmlAttribute(
+              celebrationVideo?.url || ""
+            )}"
+          >
+
+        </div>
+
+
+        <div
+          class="error-text"
+          id="videoErr"
+        ></div>
+
+
+        <div class="modal-actions">
+
+          <button
+            class="btn"
+            id="clearVideoBtn"
+          >
+            Remove video
+          </button>
+
+
+          <button
+            class="btn primary"
+            id="saveVideoBtn"
+          >
+            Save video
+          </button>
+
+        </div>
+
+
+        <div class="status-line">
+
+          ${videoStatus}
+
+        </div>
+
+
+        <div class="modal-actions">
+
+          <button
+            class="btn"
+            id="logoutBtn"
+          >
+            Sign out
+          </button>
+
+        </div>
+
+      `;
+
+
+      document
+        .getElementById(
+          "closeBtn"
+        )
+        .addEventListener(
+          "click",
+          closeAdmin
+        );
+
+
+      document
+        .getElementById(
+          "wordInput"
+        )
+        .addEventListener(
+          "input",
+          event => {
+
+            event.target.value =
+              event.target.value
+                .toUpperCase()
+                .replace(
+                  /[^A-Z]/g,
+                  ""
+                );
+
+          }
+        );
+
+
+      document
+        .getElementById(
+          "saveWordBtn"
+        )
+        .addEventListener(
+          "click",
+          saveWord
+        );
+
+
+      document
+        .getElementById(
+          "saveVideoBtn"
+        )
+        .addEventListener(
+          "click",
+          saveVideo
+        );
+
+
+      document
+        .getElementById(
+          "clearVideoBtn"
+        )
+        .addEventListener(
+          "click",
+          removeVideo
+        );
+
+
+      document
+        .getElementById(
+          "logoutBtn"
+        )
+        .addEventListener(
+          "click",
+          async () => {
+
+            await signOut(
+              auth
+            );
+
+
+            closeAdmin();
+
+
+            showBanner(
+              "Signed out.",
+              1500
+            );
+
+          }
+        );
+
+    }
+
+
+    /* =========================================
+       SAVE WORD
+    ========================================= */
+
+    async function saveWord() {
+
+      if (
+        !isAdmin()
+      ) {
+
+        renderAdminLogin(
+          "Admin authentication required."
+        );
+
+        return;
+
+      }
+
+
+      const input =
+        document.getElementById(
+          "wordInput"
+        );
+
+
+      const error =
+        document.getElementById(
+          "adminErr"
+        );
+
+
+      const value =
+        input.value
+          .trim()
+          .toUpperCase();
+
+
+      if (
+        value.length <
+          MIN_LEN ||
+        value.length >
+          MAX_LEN
+      ) {
+
+        error.textContent =
+          `Word must be between ${MIN_LEN} and ${MAX_LEN} letters.`;
+
+        return;
+
+      }
+
+
+      if (
+        !/^[A-Z]+$/.test(
+          value
+        )
+      ) {
+
+        error.textContent =
+          "Use letters A–Z only.";
+
+        return;
+
+      }
+
+
+      error.textContent =
+        "Saving…";
+
+
+      try {
+
+        await setDoc(
+
+          settingsRef,
+
+          {
+
+            word:
+              value,
+
+            updatedAt:
+              serverTimestamp()
+
+          },
+
+          {
+            merge: true
+          }
+
+        );
+
+
+        closeAdmin();
+
+
+        showBanner(
+          `New ${value.length}-letter word set!`,
+          1800
+        );
+
+      }
+
+
+      catch (errorObj) {
+
+        console.error(
+          errorObj
+        );
+
+
+        error.textContent =
+          "Could not save the word. Check your Firestore rules.";
+
+      }
+
+    }
+
+
+    /* =========================================
+       SAVE VIDEO
+    ========================================= */
+
+    async function saveVideo() {
+
+      if (
+        !isAdmin()
+      ) {
+
+        renderAdminLogin(
+          "Admin authentication required."
+        );
+
+        return;
+
+      }
+
+
+      const input =
+        document.getElementById(
+          "videoInput"
+        );
+
+
+      const error =
+        document.getElementById(
+          "videoErr"
+        );
+
+
+      const value =
+        input.value.trim();
+
+
+      if (!value) {
+
+        error.textContent =
+          "Enter a URL, or use Remove video instead.";
+
+        return;
+
+      }
+
+
+      const converted =
+        toEmbeddable(
+          value
+        );
+
+
+      if (!converted) {
+
+        error.textContent =
+          "That doesn't look like a valid URL.";
+
+        return;
+
+      }
+
+
+      if (
+        converted.kind ===
+        "error"
+      ) {
+
+        error.textContent =
+          converted.message;
+
+        return;
+
+      }
+
+
+      error.textContent =
+        "Saving…";
+
+
+      try {
+
+        await setDoc(
+
+          settingsRef,
+
+          {
+
+            videoUrl:
+              value,
+
+            updatedAt:
+              serverTimestamp()
+
+          },
+
+          {
+            merge: true
+          }
+
+        );
+
+
+        celebrationVideo = {
+
+          url: value
+
+        };
+
+
+        renderAdminPanel();
+
+
+        showBanner(
+          "Victory video saved!",
+          1800
+        );
+
+      }
+
+
+      catch (errorObj) {
+
+        console.error(
+          errorObj
+        );
+
+
+        error.textContent =
+          "Could not save the video. Check your Firestore rules.";
+
+      }
+
+    }
+
+
+    /* =========================================
+       REMOVE VIDEO
+    ========================================= */
+
+    async function removeVideo() {
+
+      if (
+        !isAdmin()
+      ) {
+
+        renderAdminLogin(
+          "Admin authentication required."
+        );
+
+        return;
+
+      }
+
+
+      try {
+
+        await setDoc(
+
+          settingsRef,
+
+          {
+
+            videoUrl: "",
+
+            updatedAt:
+              serverTimestamp()
+
+          },
+
+          {
+            merge: true
+          }
+
+        );
+
+
+        celebrationVideo =
+          null;
+
+
+        renderAdminPanel();
+
+
+        showBanner(
+          "Victory video removed.",
+          1500
+        );
+
+      }
+
+
+      catch (errorObj) {
+
+        console.error(
+          errorObj
+        );
+
+
+        const error =
+          document.getElementById(
+            "videoErr"
+          );
+
+
+        if (error) {
+
+          error.textContent =
+            "Could not remove the video. Check your Firestore rules.";
+
+        }
+
+      }
+
+    }
+
+
+    /* =========================================
+       AUTH STATE
+    ========================================= */
+
+    onAuthStateChanged(
+
+      auth,
+
+      user => {
+
+        if (
+          user &&
+          user.uid !==
+            ADMIN_UID
+        ) {
+
+          signOut(
+            auth
+          ).catch(
+            console.error
+          );
+
+        }
+
+      }
+
+    );
+
+
+    /* =========================================
+       START
+    ========================================= */
+
+    init();
+
+  </script>
+
+</body>
+</html>
