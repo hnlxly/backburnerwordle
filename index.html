@@ -696,6 +696,123 @@
       text-decoration: underline;
     }
 
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-btn {
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--ink-soft);
+      transition: border-color 0.15s ease, color 0.15s ease;
+      font-size: 17px;
+    }
+
+    .header-btn:hover {
+      border-color: var(--ink-soft);
+      color: var(--ink);
+    }
+
+    .player-bar {
+      width: 100%;
+      margin-bottom: 14px;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: var(--radius);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .player-bar strong {
+      font-size: 13px;
+    }
+
+    .player-bar button {
+      border: none;
+      background: none;
+      color: var(--accent);
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .leaderboard-modal {
+      max-width: 440px;
+    }
+
+    .leaderboard-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .leaderboard-row {
+      display: grid;
+      grid-template-columns: 34px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: var(--radius);
+    }
+
+    .leaderboard-rank {
+      font-family: 'Fraunces', serif;
+      font-size: 17px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .leaderboard-name {
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .leaderboard-meta {
+      color: var(--ink-soft);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .leaderboard-score {
+      text-align: right;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .leaderboard-score span {
+      display: block;
+      color: var(--ink-soft);
+      font-weight: 500;
+      font-size: 10px;
+    }
+
+    .result-card {
+      border: 1px solid var(--line);
+      background: var(--card);
+      padding: 12px;
+      margin: 12px 0;
+      border-radius: var(--radius);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
     @media (max-width: 380px) {
 
       .wrap {
@@ -753,11 +870,26 @@
 
       </div>
 
-      <button
-        id="adminBtn"
-        title="Admin"
-        aria-label="Admin settings"
-      >
+      <div class="header-actions">
+        <button
+          id="leaderboardBtn"
+          class="header-btn"
+          title="Leaderboard"
+          aria-label="Leaderboard"
+        >🏆</button>
+
+        <button
+          id="playerBtn"
+          class="header-btn"
+          title="Player account"
+          aria-label="Player account"
+        >👤</button>
+
+        <button
+          id="adminBtn"
+          title="Admin"
+          aria-label="Admin settings"
+        >
 
         <svg
           viewBox="0 0 24 24"
@@ -812,12 +944,32 @@
 
   </div>
 
+  <div
+    id="playerOverlay"
+    class="overlay hidden"
+  >
+    <div
+      class="modal"
+      id="playerModal"
+    ></div>
+  </div>
+
+  <div
+    id="leaderboardOverlay"
+    class="overlay hidden"
+  >
+    <div
+      class="modal leaderboard-modal"
+      id="leaderboardModal"
+    ></div>
+  </div>
+
 
   <!--
     FIREBASE VERSION
 
     Firebase Authentication:
-    Used only for the admin.
+    Used for admin and friend/player accounts.
 
     Firestore:
     game/settings
@@ -825,8 +977,10 @@
       videoUrl
       updatedAt
 
-    IMPORTANT:
-    Friends do not need to log in.
+    Player scores:
+    dailyScores/{roundId}/players/{uid}
+
+    Each daily word has its own leaderboard.
   -->
 
   <script type="module">
@@ -837,6 +991,8 @@
     import {
       getAuth,
       signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      updateProfile,
       signOut,
       onAuthStateChanged
     } from
@@ -847,6 +1003,8 @@
       doc,
       getDoc,
       setDoc,
+      getDocs,
+      collection,
       onSnapshot,
       serverTimestamp
     } from
@@ -958,6 +1116,10 @@
 
     let bannerTimer = null;
 
+    let playerUser = null;
+    let playerStats = null;
+    let resultRecordedForWord = null;
+
 
     /* =========================================
        DOM
@@ -1002,6 +1164,36 @@
     const victoryModal =
       document.getElementById(
         "victoryModal"
+      );
+
+    const playerBtn =
+      document.getElementById(
+        "playerBtn"
+      );
+
+    const leaderboardBtn =
+      document.getElementById(
+        "leaderboardBtn"
+      );
+
+    const playerOverlay =
+      document.getElementById(
+        "playerOverlay"
+      );
+
+    const playerModal =
+      document.getElementById(
+        "playerModal"
+      );
+
+    const leaderboardOverlay =
+      document.getElementById(
+        "leaderboardOverlay"
+      );
+
+    const leaderboardModal =
+      document.getElementById(
+        "leaderboardModal"
       );
 
 
@@ -1543,8 +1735,17 @@
           : "";
 
 
+      const roundId =
+        typeof data?.roundId === "string" && data.roundId.trim()
+          ? data.roundId.trim()
+          : data?.updatedAt?.seconds
+            ? `round_${data.updatedAt.seconds}_${data.updatedAt.nanoseconds || 0}`
+            : nextWord
+              ? `word_${nextWord}`
+              : "";
+
       const signature =
-        `${nextWord}|${nextVideoUrl}`;
+        `${nextWord}|${nextVideoUrl}|${roundId}`;
 
 
       if (
@@ -1574,7 +1775,8 @@
               word: nextWord,
               setAt:
                 data?.updatedAt ||
-                null
+                null,
+              roundId
             }
 
           : null;
@@ -2150,6 +2352,8 @@
 
       gameArea.innerHTML = `
 
+        ${renderPlayerBar()}
+
         <div
           class="grid"
           style="max-width:${gridWidth}px"
@@ -2182,6 +2386,8 @@
 
       `;
 
+
+      attachPlayerBarEvents();
 
       gameArea
         .querySelectorAll(
@@ -2232,7 +2438,7 @@
         ) {
 
           showBanner(
-            "Solved it. Nicely done."
+            "Wow galing"
           );
 
         }
@@ -2241,7 +2447,7 @@
         else {
 
           showBanner(
-            `Out of guesses — the word was ${currentWord.word}.`
+            `hahahaha mafomo ka nyan ${currentWord.word}.`
           );
 
         }
@@ -2396,6 +2602,10 @@
 
         render();
 
+        // Save the finished game to Firebase before showing the result.
+        if (progress.gameOver && playerUser) {
+          await recordGameResult();
+        }
 
         if (won) {
 
@@ -2866,6 +3076,699 @@
       }
     );
 
+
+
+    /* =========================================
+       PLAYER ACCOUNTS
+    ========================================= */
+
+    function isPlayer() {
+      return !!auth.currentUser &&
+        auth.currentUser.uid !== ADMIN_UID;
+    }
+
+    function playerRef(uid) {
+      return doc(db, "players", uid);
+    }
+
+    async function loadPlayerStats(user) {
+      if (!user || user.uid === ADMIN_UID) {
+        playerStats = null;
+        return;
+      }
+
+      try {
+        const snap = await getDoc(playerRef(user.uid));
+
+        if (snap.exists()) {
+          playerStats = snap.data();
+        } else {
+          playerStats = {
+            displayName: user.displayName || "Player",
+            games: 0,
+            wins: 0,
+            totalGuesses: 0,
+            bestGuesses: null,
+            averageGuesses: null
+          };
+
+          await setDoc(
+            playerRef(user.uid),
+            playerStats,
+            { merge: true }
+          );
+        }
+      } catch (error) {
+        console.error("Could not load player profile:", error);
+        playerStats = null;
+      }
+    }
+
+    function playerName() {
+      return (
+        playerStats?.displayName ||
+        playerUser?.displayName ||
+        "Player"
+      );
+    }
+
+    async function recordGameResult() {
+      if (
+        !playerUser ||
+        !currentWord ||
+        !progress ||
+        !progress.gameOver
+      ) {
+        return;
+      }
+
+      const roundId = currentWord.roundId || `word_${currentWord.word}`;
+      const resultKey = `${playerUser.uid}_${roundId}`;
+
+      if (resultRecordedForWord === resultKey) {
+        return;
+      }
+
+      const guesses = progress.guesses.length;
+      const won = !!progress.won;
+
+      try {
+        const dailyRef = doc(
+          db,
+          "dailyScores",
+          roundId,
+          "players",
+          playerUser.uid
+        );
+
+        // One score per player for this daily word.
+        await setDoc(
+          dailyRef,
+          {
+            userId: playerUser.uid,
+            displayName: playerName(),
+            word: currentWord.word,
+            guesses,
+            won,
+            result: won ? "win" : "loss",
+            completedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+
+        // Keep the player's all-time summary as well.
+        const profileRef = playerRef(playerUser.uid);
+        const snap = await getDoc(profileRef);
+        const old = snap.exists()
+          ? snap.data()
+          : {
+              displayName: playerName(),
+              games: 0,
+              wins: 0,
+              totalGuesses: 0,
+              bestGuesses: null,
+              averageGuesses: null
+            };
+
+        // Do not count the same round twice if the user refreshes/retries.
+        const lastRoundId = old.lastRoundId || null;
+        const sameLastRound = lastRoundId === roundId;
+
+        if (!sameLastRound) {
+          const games = Number(old.games || 0) + 1;
+          const wins = Number(old.wins || 0) + (won ? 1 : 0);
+          const totalGuesses = Number(old.totalGuesses || 0) + guesses;
+          const bestGuesses =
+            old.bestGuesses == null
+              ? guesses
+              : Math.min(Number(old.bestGuesses), guesses);
+
+          await setDoc(
+            profileRef,
+            {
+              displayName: playerName(),
+              games,
+              wins,
+              totalGuesses,
+              bestGuesses,
+              averageGuesses: Number((totalGuesses / games).toFixed(2)),
+              lastWord: currentWord.word,
+              lastResult: won ? "win" : "loss",
+              lastGuesses: guesses,
+              lastRoundId: roundId,
+              lastPlayedAt: serverTimestamp()
+            },
+            { merge: true }
+          );
+
+          playerStats = {
+            ...old,
+            games,
+            wins,
+            totalGuesses,
+            bestGuesses,
+            averageGuesses: Number((totalGuesses / games).toFixed(2)),
+            lastWord: currentWord.word,
+            lastResult: won ? "win" : "loss",
+            lastGuesses: guesses,
+            lastRoundId: roundId
+          };
+        }
+
+        resultRecordedForWord = resultKey;
+
+        // If the leaderboard is open on another tab/device, its onSnapshot
+        // listener will receive this new score automatically.
+      } catch (error) {
+        console.error("Could not record game result:", error);
+        resultRecordedForWord = null;
+        showBanner(
+          "Your result could not be saved. Check your Firebase rules.",
+          3500
+        );
+      }
+    }
+
+    function renderPlayerBar() {
+      if (!playerUser) {
+        return `
+          <div class="player-bar">
+            <span>Log in to record your score.</span>
+            <button id="quickLoginBtn">Log in</button>
+          </div>
+        `;
+      }
+
+      const avg =
+        playerStats?.averageGuesses != null
+          ? Number(playerStats.averageGuesses).toFixed(2)
+          : "—";
+
+      return `
+        <div class="player-bar">
+          <span>
+            Playing as <strong>${escapeHtml(playerName())}</strong>
+            · Avg. ${avg} guesses
+          </span>
+          <button id="playerLogoutBtn">Sign out</button>
+        </div>
+      `;
+    }
+
+    function attachPlayerBarEvents() {
+      const quickLoginBtn =
+        document.getElementById("quickLoginBtn");
+
+      if (quickLoginBtn) {
+        quickLoginBtn.addEventListener(
+          "click",
+          openPlayer
+        );
+      }
+
+      const logout =
+        document.getElementById("playerLogoutBtn");
+
+      if (logout) {
+        logout.addEventListener(
+          "click",
+          async () => {
+            await signOut(auth);
+            showBanner("Signed out.", 1500);
+          }
+        );
+      }
+    }
+
+    function renderPlayerLogin(message = "", signup = false) {
+      playerModal.innerHTML = `
+        <h2>${signup ? "Create player account" : "Player login"}</h2>
+
+        <p class="sub">
+          ${signup
+            ? "Create an account so your guesses and results appear on the leaderboard."
+            : "Log in to save your results and compete with your friends."}
+        </p>
+
+        ${
+          signup
+            ? `
+              <div class="field">
+                <label for="playerNameInput">Display name</label>
+                <input
+                  id="playerNameInput"
+                  type="text"
+                  maxlength="20"
+                  autocomplete="nickname"
+                  placeholder="e.g. Hannah"
+                >
+              </div>
+            `
+            : ""
+        }
+
+        <div class="field">
+          <label for="playerEmail">Email</label>
+          <input
+            id="playerEmail"
+            type="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+          >
+        </div>
+
+        <div class="field">
+          <label for="playerPassword">Password</label>
+          <input
+            id="playerPassword"
+            type="password"
+            autocomplete="${signup ? "new-password" : "current-password"}"
+            placeholder="Password"
+          >
+        </div>
+
+        <div class="error-text" id="playerErr">
+          ${escapeHtml(message)}
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn" id="playerCancelBtn">Close</button>
+          <button class="btn primary" id="playerSubmitBtn">
+            ${signup ? "Create account" : "Log in"}
+          </button>
+        </div>
+
+        <button
+          class="rewatch-link"
+          id="playerModeBtn"
+          style="padding-top:14px;"
+        >
+          ${signup
+            ? "Already have an account? Log in"
+            : "New here? Create an account"}
+        </button>
+      `;
+
+      document
+        .getElementById("playerCancelBtn")
+        .addEventListener(
+          "click",
+          closePlayer
+        );
+
+      document
+        .getElementById("playerModeBtn")
+        .addEventListener(
+          "click",
+          () => renderPlayerLogin("", !signup)
+        );
+
+      const submit = async () => {
+        const email =
+          document.getElementById("playerEmail")
+            .value.trim();
+
+        const password =
+          document.getElementById("playerPassword")
+            .value;
+
+        const error =
+          document.getElementById("playerErr");
+
+        if (!email || !password) {
+          error.textContent =
+            "Enter your email and password.";
+          return;
+        }
+
+        if (signup) {
+          const nameInput =
+            document.getElementById("playerNameInput");
+
+          const name =
+            nameInput.value.trim();
+
+          if (!name) {
+            error.textContent =
+              "Enter a display name.";
+            return;
+          }
+
+          if (name.length > 20) {
+            error.textContent =
+              "Display name must be 20 characters or less.";
+            return;
+          }
+
+          error.textContent =
+            "Creating account…";
+
+          try {
+            const credential =
+              await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+              );
+
+            await updateProfile(
+              credential.user,
+              { displayName: name }
+            );
+
+            playerUser = auth.currentUser;
+
+            await loadPlayerStats(playerUser);
+
+            closePlayer();
+            render();
+
+            showBanner(
+              `Welcome, ${name}!`,
+              1800
+            );
+
+          } catch (errorObj) {
+            console.error(errorObj);
+            error.textContent =
+              firebasePlayerAuthError(errorObj);
+          }
+
+        } else {
+          error.textContent =
+            "Logging in…";
+
+          try {
+            const credential =
+              await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+              );
+
+            if (credential.user.uid === ADMIN_UID) {
+              await signOut(auth);
+              error.textContent =
+                "Use the admin button for the administrator account.";
+              return;
+            }
+
+            playerUser = credential.user;
+
+            await loadPlayerStats(playerUser);
+
+            closePlayer();
+            render();
+
+            showBanner(
+              `Welcome back, ${playerName()}!`,
+              1800
+            );
+
+          } catch (errorObj) {
+            console.error(errorObj);
+            error.textContent =
+              firebasePlayerAuthError(errorObj);
+          }
+        }
+      };
+
+      document
+        .getElementById("playerSubmitBtn")
+        .addEventListener(
+          "click",
+          submit
+        );
+
+      document
+        .getElementById(
+          signup
+            ? "playerPassword"
+            : "playerPassword"
+        )
+        .addEventListener(
+          "keydown",
+          event => {
+            if (event.key === "Enter") {
+              submit();
+            }
+          }
+        );
+    }
+
+    function firebasePlayerAuthError(error) {
+      switch (error?.code) {
+        case "auth/email-already-in-use":
+          return "That email is already registered.";
+        case "auth/weak-password":
+          return "Password should be at least 6 characters.";
+        case "auth/invalid-email":
+          return "Please enter a valid email address.";
+        case "auth/invalid-credential":
+        case "auth/wrong-password":
+        case "auth/user-not-found":
+          return "Incorrect email or password.";
+        case "auth/too-many-requests":
+          return "Too many attempts. Please wait and try again.";
+        default:
+          return "Could not complete the login. Check Firebase Authentication.";
+      }
+    }
+
+    function openPlayer() {
+      if (isPlayer()) {
+        renderPlayerAccount();
+      } else {
+        renderPlayerLogin();
+      }
+
+      playerOverlay.classList.remove("hidden");
+    }
+
+    function closePlayer() {
+      playerOverlay.classList.add("hidden");
+    }
+
+    function renderPlayerAccount() {
+      const avg =
+        playerStats?.averageGuesses != null
+          ? Number(playerStats.averageGuesses).toFixed(2)
+          : "—";
+
+      playerModal.innerHTML = `
+        <h2>${escapeHtml(playerName())}</h2>
+
+        <p class="sub">
+          Your saved game statistics
+        </p>
+
+        <div class="result-card">
+          <b>Games:</b> ${playerStats?.games || 0}<br>
+          <b>Wins:</b> ${playerStats?.wins || 0}<br>
+          <b>Average guesses:</b> ${avg}<br>
+          <b>Best:</b> ${
+            playerStats?.bestGuesses ?? "—"
+          } guesses
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn" id="playerAccountClose">
+            Close
+          </button>
+          <button class="btn primary" id="playerAccountLogout">
+            Sign out
+          </button>
+        </div>
+      `;
+
+      document
+        .getElementById("playerAccountClose")
+        .addEventListener(
+          "click",
+          closePlayer
+        );
+
+      document
+        .getElementById("playerAccountLogout")
+        .addEventListener(
+          "click",
+          async () => {
+            await signOut(auth);
+            closePlayer();
+            showBanner("Signed out.", 1500);
+          }
+        );
+    }
+
+    let leaderboardUnsubscribe = null;
+
+    async function openLeaderboard() {
+      leaderboardOverlay.classList.remove("hidden");
+
+      leaderboardModal.innerHTML = `
+        <h2>Today's Leaderboard 🏆</h2>
+        <p class="sub">
+          ${currentWord ? `Word: <b>${escapeHtml(currentWord.word)}</b>` : "No word is set yet."}
+          <br>Fewest guesses wins. Each player gets one score for today's word.
+        </p>
+        <div class="leaderboard-list">
+          <div class="idle-note" style="padding:20px;">Loading scores…</div>
+        </div>
+      `;
+
+      if (leaderboardUnsubscribe) {
+        leaderboardUnsubscribe();
+        leaderboardUnsubscribe = null;
+      }
+
+      if (!currentWord) {
+        renderDailyLeaderboard([]);
+        return;
+      }
+
+      const roundId = currentWord.roundId || `word_${currentWord.word}`;
+      const scoresRef = collection(
+        db,
+        "dailyScores",
+        roundId,
+        "players"
+      );
+
+      try {
+        leaderboardUnsubscribe = onSnapshot(
+          scoresRef,
+          snapshot => {
+            const scores = [];
+
+            snapshot.forEach(docSnap => {
+              const data = docSnap.data();
+              scores.push({
+                ...data,
+                displayName: data.displayName || "Player",
+                guesses: Number(data.guesses || 0),
+                won: !!data.won
+              });
+            });
+
+            scores.sort((a, b) => {
+              // Winners always rank above players who ran out of guesses.
+              if (a.won !== b.won) return a.won ? -1 : 1;
+              // Among winners/losses, fewer guesses ranks higher.
+              if (a.guesses !== b.guesses) return a.guesses - b.guesses;
+              // Stable alphabetical tie-breaker.
+              return a.displayName.localeCompare(b.displayName);
+            });
+
+            renderDailyLeaderboard(scores);
+          },
+          error => {
+            console.error("Leaderboard listener error:", error);
+            renderLeaderboardError();
+          }
+        );
+      } catch (error) {
+        console.error(error);
+        renderLeaderboardError();
+      }
+    }
+
+    function renderDailyLeaderboard(scores) {
+      if (!scores.length) {
+        leaderboardModal.innerHTML = `
+          <h2>Today's Leaderboard 🏆</h2>
+          <p class="sub">
+            ${currentWord ? `Word: <b>${escapeHtml(currentWord.word)}</b>` : "No word is set yet."}
+            <br>No scores yet. Be the first!
+          </p>
+          <div class="modal-actions">
+            <button class="btn primary" id="leaderboardClose">Close</button>
+          </div>
+        `;
+      } else {
+        leaderboardModal.innerHTML = `
+          <h2>Today's Leaderboard 🏆</h2>
+          <p class="sub">
+            <b>${escapeHtml(currentWord.word)}</b> · updates live
+            <br>Lower guesses rank higher. Winners rank above losses.
+          </p>
+
+          <div class="leaderboard-list">
+            ${scores.map((p, index) => `
+              <div class="leaderboard-row">
+                <div class="leaderboard-rank">${index + 1}</div>
+                <div>
+                  <div class="leaderboard-name">${escapeHtml(p.displayName)}</div>
+                  <div class="leaderboard-meta">
+                    ${p.won ? `Solved in ${p.guesses} ${p.guesses === 1 ? "guess" : "guesses"}` : `Didn't solve · ${p.guesses} guesses`}
+                  </div>
+                </div>
+                <div class="leaderboard-score">
+                  ${p.won ? p.guesses : "—"}
+                </div>
+              </div>
+            `).join("")}
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn primary" id="leaderboardClose">Close</button>
+          </div>
+        `;
+      }
+
+      const closeBtn = document.getElementById("leaderboardClose");
+      if (closeBtn) closeBtn.addEventListener("click", closeLeaderboard);
+    }
+
+    function renderLeaderboardError() {
+      leaderboardModal.innerHTML = `
+        <h2>Today's Leaderboard</h2>
+        <p class="sub">Could not load today's scores. Check your Firestore rules.</p>
+        <div class="modal-actions">
+          <button class="btn primary" id="leaderboardClose">Close</button>
+        </div>
+      `;
+
+      document
+        .getElementById("leaderboardClose")
+        .addEventListener("click", closeLeaderboard);
+    }
+
+    function closeLeaderboard() {
+      leaderboardOverlay.classList.add("hidden");
+
+      if (leaderboardUnsubscribe) {
+        leaderboardUnsubscribe();
+        leaderboardUnsubscribe = null;
+      }
+    }
+
+    playerBtn.addEventListener(
+      "click",
+      openPlayer
+    );
+
+    leaderboardBtn.addEventListener(
+      "click",
+      openLeaderboard
+    );
+
+    playerOverlay.addEventListener(
+      "click",
+      event => {
+        if (event.target === playerOverlay) {
+          closePlayer();
+        }
+      }
+    );
+
+    leaderboardOverlay.addEventListener(
+      "click",
+      event => {
+        if (event.target === leaderboardOverlay) {
+          closeLeaderboard();
+        }
+      }
+    );
 
     /* =========================================
        ADMIN
@@ -3549,6 +4452,9 @@
 
             word:
               value,
+
+            roundId:
+              `round_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`,
 
             updatedAt:
               serverTimestamp()
